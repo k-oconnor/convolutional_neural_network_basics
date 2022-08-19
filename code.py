@@ -1,7 +1,6 @@
 import pandas as pd
 import os
 from sklearn.metrics import classification_report
-from sklearn.utils import shuffle
 import torch
 import torchvision
 import torchvision.transforms as transforms
@@ -9,17 +8,14 @@ import torchvision.datasets as datasets
 import matplotlib.pyplot as plt
 import numpy as np
 import torch.nn as nn
-import torch.nn.functional as F
-import torch.optim as optim
 from torch.optim import Adam
 
-
+## --------------------- data loading and preprocessing  ---------------------##
 ## Loading and normalizing images.
 normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
 
-classes = pd.read_csv('data/CLASS NAMES.csv')["COMMON NAME"].tolist()
 batch_size = 32
 num_workers = 0
 
@@ -112,7 +108,7 @@ net = Net(6,12)
 ## Define loss function and optimizer
 
 criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(net.parameters(), lr=1e-4)
+optimizer = Adam(net.parameters(), lr=1e-4)
 
 
 loss_list = []                      ## We initialize two empty lists to append loss from each epoch to
