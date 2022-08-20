@@ -121,10 +121,10 @@ To illustrate this process, we will implement a simple plotting function to show
 
 ![Data Loaders and Visualizing a Batch](Images/code2.png)
 
-## Visualizing 25 un-normalized images
+### Visualizing 25 un-normalized images:
 ![Visualizing a Random Batch Un-normalized](Images/un_norm_im.png)
 
-## Visualizing 25 normalized images
+### Visualizing 25 normalized images:
 ![Visualizing a Random Batch Normalized](Images/norm_im.png)
 
 ## *(2) Model Constructor and Intializing*
@@ -166,6 +166,7 @@ Selecting the loss function and optimizer are very problem specific. Cross-entro
 
 For the optimizer, I selected ADAM, as it is very fast, and generally outperforms stochastic gradient descent on accuracy. I tried running the model with various weight decays, and found them to lower accuracy in this scenario.
 
+### Here is the code for the optimizer and loss function:
 ![Loss Function and Optimizer](Images/code4.png)
 
 ## *(4) Training, Validation, and Tuning*
