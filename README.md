@@ -20,6 +20,7 @@ In the case of RGB images we have three channels; red, green, and blue and each 
 The kernel is a matrix that moves over the input data, performs the dot product with the sub-region of input data, and gets the output as the matrix of dot products. Kernel moves on the input data by the stride value.
 
 ## What is a convolution? 
+-  In most simple terms, a convolution is like sliding a filter over an image
 - Convolution is a mathematical operation on two functions that produces a third function that expresses how the shape of one is modified by the other.
 - In image processing, convolution is the process of transforming an image by applying a kernel over each pixel and its local neighbors across the entire image. The kernel is a matrix of values whose size and values determine the transformation effect of the convolution process.
 - The Convolution Process involves these steps. (1)It places the Kernel Matrix over each pixel of the image (ensuring that the full Kernel is within the image), multiplies each value of the Kernel with the corresponding pixel it is over. (2)Then, sums the resulting multiplied values and returns the resulting value as the new value of the center pixel. (3) This process is repeated across the entire image.
@@ -32,20 +33,48 @@ The kernel is a matrix that moves over the input data, performs the dot product 
 - A neural network is a method in artificial intelligence that teaches computers to process data in a way that is inspired by the human brain. 
 - It is a type of machine learning process, called deep learning, that uses interconnected nodes or neurons in a layered structure that resembles the human brain. 
 - It creates an adaptive system that computers use to learn from their mistakes and improve continuously.
+- A cnn is a class of neural network that uses convolutional layers for analysis of visual data
 
-![A 1-Hidden Layer NN with two neurons](Images/Fig1.png)
+> Neural Networks receive an input (a single vector), and transform it through a series of hidden layers.  
+> Each hidden layer is made up of a set of neurons, where each neuron is fully connected to all neurons in 
+> the previous layer, and where neurons in a single layer function completely independently and do not share 
+> any connections. The last fully-connected layer is called the “output layer” and in classification settings 
+> it represents the class scores.
 
-## What are the building blocks of a nn in PyTorch?
-- Tensors: A tensor is a matrix-like data structure that is used across deep learning frameworks. Tensor operations are fundamental to PyTorch, and are used for all data.
-- Dataset class constructor: The dataset constructor at a minumum, has to have two methods created. __len__ , and __getitem__ to apply to the tensors in the dataset. 
-    it is also commonly where input dataframes are converted to tensors, and normalization transforms are applied.
-- Input layer: The input layer is said to be x-dimensional, where x is the number of explanatory variables or features.
-- Hidden Layer(s): The hidden layers are constructed of artificial neurons, which are sequential applications of linear functions which are passed through activation functions.
-- Output Layer: In the case of binary classification, the output layer consists of a consolidating linear function, which is passed through a sigmoid function to output a probability for class. In the binary case, the output is of dimension 1. In multi-class classification, the output is n-dimensional, where n is the number of possible class.
-- Loss Function: The loss function is the criterion on which the network measures success. For example, in simple linear regression, we try to minimize mean square error. There are numerous loss funcitons that can be used for different applications. Binary cross-entropy loss is a commonly used for single-class prediction. Cross-entropy loss can be extended for use in multi-class classification.
-- Optimizer: The optimizer is a function or algorithm that updates the network parameters at each epoch, and is integral to the learning process. The weights of the parameters are increased or decreased progressively in attempt to reduce loss on the next pass.
+> Regular Neural Nets don’t scale well to full images. In CIFAR-10, images are only of size 32x32x3 (32 wide, 
+> 32 high, 3 color channels), so a single fully-connected neuron in a first hidden layer of a regular Neural 
+> Network would have 32*32*3 = 3072 weights. This amount still seems manageable, but clearly this 
+> fully-connected structure does not scale to larger images. For example, an image of more respectable size, 
+> e.g. 200x200x3, would lead to neurons that have 200*200*3 = 120,000 weights. Moreover, we would almost  
+> certainly want to have several such neurons, so the parameters would add up quickly! Clearly, this full 
+> connectivity is wasteful and the huge number of parameters would quickly lead to overfitting.
+
+![An Example CNN Diagram](Images/CNN_example.jpeg)
+
+## What are the building blocks of a cnn in PyTorch?
+- **Imaging preprocessing scheme:** Preprocessing refers to all the transformations on the raw data before it is fed to the machine learning or deep learning algorithm. Images usually are not represented in a way that is easy for a network to make sense of raw. As such, it is in most all cases, a requirement for a well performing model to have inputs transformed into a way that eccentuates the features that are most important for the problem at hand.
+
+- **Input Layer:** Holds the raw pixel values of the image.
+
+- **Convolutional Layer(s):** will compute the output of neurons that are connected to local regions in the input, each computing a dot product between their weights and a small region they are connected to in the input volume. 
+
+- **Rectified Linear Unit Function Layer(s):** will apply an elementwise activation function, such as the max(0,x) thresholding at zero. This leaves the size of the volume unchanged.
+
+- **Pooling Layer(s):** Performs downsampling operations along the spatial dimensions (width, height).
+
+- **Fully Connected Layer(s):** Computes the class scores where each of the numbers correspond to a class score, such as among the 10 categories of CIFAR-10. As with ordinary Neural Networks and as the name implies, each neuron in this layer will be connected to all the numbers in the previous volume.
+
+- **Loss Function:** The loss function is the criterion on which the network measures success. For example, in simple linear regression, we try to minimize mean square error. There are numerous loss funcitons that can be used for different applications. Binary cross-entropy loss is a commonly used for single-class prediction. Cross-entropy loss can be extended for use in multi-class classification.
+
+- **Optimizer:** The optimizer is a function or algorithm that updates the network parameters at each epoch, and is integral to the learning process. The weights of the parameters are increased or decreased progressively in attempt to reduce loss on the next pass.
 
 ## Problem Description and Data
+For this exercise, we will be using the "Butterfly Image Classification 75 species" available on Kaggle.com
+It contains 9285 training, 375 testing,and 375 validation images all in 224 X 224 X 3 jpeg format.
+
+Our objective is to train a convolutional neural network that has the greatest accuracy in predicting correct species/classes over the testing image set.
+
+We will do this by training the model on the 9285 training images, using the model to make predictions on the testing data, and running a basic Sci-Kit Learn classification report.
 
 # The Steps 
 - Preprocessing and Loading
@@ -54,7 +83,7 @@ The kernel is a matrix that moves over the input data, performs the dot product 
 - Training, Validation, and Tuning
 - Making Predictions on Test Data
 
-## Preprocessing and Loading
+## *Preprocessing and Loading*
 
 ![Normalization](Images/code1.png)
 
@@ -66,7 +95,7 @@ The kernel is a matrix that moves over the input data, performs the dot product 
 
 
 
-## Model Constructor and Intializing
+## *Model Constructor and Intializing*
 The model constructor is where we make our specifications for the neural network. First, we make our linear layers. The forward method can be called to make a prediction. There are three typical activation functions 'relu, tanh, sigmoid'. Relu is useful, as sigmoid and tanh are bounded <|1|, so as multiple gradients are multiplied together, the number doesn't neccesarily approach 0. We apply the relu function in the hidden layers, and use a sigmoid activation in the output layer to make predictions. Passing the linear function through the sigmoid activation will result in output being the probability of survival, analogous to a logistic regression. Note how there are two hidden layers. We can generalize this construction to an arbitrary number of layers, by adding more linear functions and activations to the __init__ and the forward pass method. 
 
 Reminder: A neuron is a combination of a linear function and an activation
@@ -81,16 +110,16 @@ Note how at the end of the constructor, we initialize the model with our desired
 
 ![Model Initialization](Images/model.png)
 
-## Selecting Optimizer and Loss Metric
+## *Selecting Optimizer and Loss Metric*
 ![Loss Function and Optimizer](Images/code4.png)
 
-## Training, Validation, and Tuning
+## *Training, Validation, and Tuning*
 ![Training the Model](Images/code5.png)
 
 ![Training Results](Images/Fig1.png)
 
 As we see in the graph above, loss steadily decreases as we approach 100 epochs. We then observe loss flucuating relatively extremely. This tipping point is evidence of overfitting past 100 epochs, as the network begins to chase changes that are random variation in the batches. So, we would most likely choose to re-run the model with 100 epochs to get the most reliable results on the testing data.
 
-## Making Predictions on Test Data
+## *Making Predictions on Test Data*
 ![Making Predictions](Images/code6.png)
 ![Classification Report](Images/Results1.png)

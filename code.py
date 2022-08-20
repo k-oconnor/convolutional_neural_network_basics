@@ -151,7 +151,7 @@ t = TicToc()                ## Create instance of class
 start_time = t.tic()        ## Start timer
 
 # Run the training loop
-for epoch in range(500):    ## By inputing the range(x), we are choosing 'x' epochs to iterate over the training data
+for epoch in range(5):    ## By inputing the range(x), we are choosing 'x' epochs to iterate over the training data
 
     print(f'Starting epoch {epoch+1}')  ## Print which epoch is begining
     
@@ -207,3 +207,9 @@ with torch.no_grad():
 
 ## Making our final classification report for how well the model performs
 print(classification_report(y_ground,y_pred, target_names = class_names, digits = 4))
+
+## 500 Epochs, no weight decay, kernel size = 5
+## 500 Epochs, weight_decay=1e-5, kernel size = 5: .7600
+## 5 Epochs, no weight decay, max pooling, kernel size = 5: .5867
+## 5 Epochs, no WD, min pooling, kernel size = 5: .5040
+## 5 Epochs, no weight decay, max pooling, kernel size = 7: .3653
