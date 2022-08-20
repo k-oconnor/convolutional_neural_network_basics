@@ -29,6 +29,21 @@ The kernel is a matrix that moves over the input data, performs the dot product 
 
 - As we see in the picture above, a 3x3 kernel is convoluted over a 7x7 source image. Center Element of the kernel is placed over the source pixel. The source pixel is then replaced with a weighted sum of itself and surrounding pixels. The output is placed in the destination pixel value. In this example, at the first position, we have 0 in source pixel and 4 in the kernel. 4x0 is 0, then moving to the next pixel we have 0 and 0 in both places. 0x0 is 0. Then again 0x0 is 0. Next at the center there is 1 in the source image and 0 in the corresponding position of kernel. 0x1 is 0. Then again 0x1 is 0. Then 0x0 is 0 and 0x1 is 0 and at the last position it is -4x2 which is -8. Now summing up all these results we get -8 as the answer; so the output of this convolution operation is -8. This result is updated in the Destination image.
 
+## What is pooling? and what are commong pooling functions in PyTorch?
+### https://medium.com/@bdhuma/which-pooling-method-is-better-maxpooling-vs-minpooling-vs-average-pooling-95fb03f45a9  
+
+Pooling is performed in neural networks to reduce variance and computation complexity. Many a times, beginners blindly use a pooling method without knowing the reason for using it. Here is a comparison of three basic pooling methods that are widely used.
+
+The three types of pooling operations are:
+
+1. Max pooling: The maximum pixel value of the batch is selected.
+2. Min pooling: The minimum pixel value of the batch is selected.
+3. Average pooling: The average value of all the pixels in the batch is selected.
+
+We cannot say that a particular pooling method is better over other generally. The choice of pooling operation is made based on the data at hand. Average pooling method smooths out the image and hence the sharp features may not be identified when this pooling method is used.
+
+Max pooling selects the brighter pixels from the image. It is useful when the background of the image is dark and we are interested in only the lighter pixels of the image. For example: in MNIST dataset, the digits are represented in white color and the background is black. So, max pooling is used. Similarly, min pooling is used in the other way round.
+
 ## What is a convolutional neural network (cnn) ?
 - A neural network is a method in artificial intelligence that teaches computers to process data in a way that is inspired by the human brain. 
 - It is a type of machine learning process, called deep learning, that uses interconnected nodes or neurons in a layered structure that resembles the human brain. 
@@ -77,13 +92,13 @@ Our objective is to train a convolutional neural network that has the greatest a
 We will do this by training the model on the 9285 training images, using the model to make predictions on the testing data, and running a basic Sci-Kit Learn classification report.
 
 # The Steps 
-- Preprocessing and Loading
-- Model Constructor and Intializing
-- Selecting Optimizer and Loss Metric
-- Training, Validation, and Tuning
-- Making Predictions on Test Data
+1. Preprocessing and Loading
+2. Model Constructor and Intializing
+3. Selecting Optimizer and Loss Metric
+4. Training, Validation, and Tuning
+5. Making Predictions on Test Data
 
-## *Preprocessing and Loading*
+## *(1) Preprocessing and Loading*
 PyTorch offers a number of built-in transformation types that we can use sequentially, or in composition. 
 As we see in the image below, I first specify a *semi* arbitrary mean and standard deviation normalization pointer, which we can use in the composition.
 
@@ -112,33 +127,86 @@ To illustrate this process, we will implement a simple plotting function to show
 ## Visualizing 25 normalized images
 ![Visualizing a Random Batch Normalized](Images/norm_im.png)
 
+## *(2) Model Constructor and Intializing*
+The model constructor is where we make our specifications for the convolutional neural network. First, we make our convolutional, pooling, and fully connected layers.
 
+ The forward method can be called to make a prediction. There are three typical activation functions 'relu, tanh, sigmoid'. Relu is useful, as sigmoid and tanh are bounded <|1|, so as multiple gradients are multiplied together, the number doesn't neccesarily approach 0. We apply the relu function to the convolutional layers, and could potentially use a sigmoid activation in the fully connected layer to make output probabilities instead of values, however, that is not needed for this particular problem.
 
-## *Model Constructor and Intializing*
-The model constructor is where we make our specifications for the neural network. First, we make our linear layers. The forward method can be called to make a prediction. There are three typical activation functions 'relu, tanh, sigmoid'. Relu is useful, as sigmoid and tanh are bounded <|1|, so as multiple gradients are multiplied together, the number doesn't neccesarily approach 0. We apply the relu function in the hidden layers, and use a sigmoid activation in the output layer to make predictions. Passing the linear function through the sigmoid activation will result in output being the probability of survival, analogous to a logistic regression. Note how there are two hidden layers. We can generalize this construction to an arbitrary number of layers, by adding more linear functions and activations to the __init__ and the forward pass method. 
+For the forward pass method, we specify the order in which these functions are applied sequentially.
+1. Convolutional Layer 1
+2. ReLU activation 1
+3. Max Pooling 1
+4. Convolutional Layer 2
+5. ReLU activation 2
+6. Max Pooling 2
+7. Flatten Layers
+8. Fully Connected Layer (linear function)
 
-Reminder: A neuron is a combination of a linear function and an activation
-- Input dimension is the number of explanatory variables
-- H1 is the number of neurons in the first hidden layer
-- H2 is the number of neurons in the second hidden layer
-- Output dimesion is the number of classes we are predicting (In this case, it is binary)
-
-![Model Specification](Images/code3.png)
-
-Note how at the end of the constructor, we initialize the model with our desired specification. The number of neurons and hidden layers needs to be carefully tuned. Having too many neurons and layers can lead to extreme overfitting. Having too few will cause our paramter estimates to underfit. It is important to simultaneously train and validate to find the sweet spot. There is no perfect answer, and there is a lot of room for intuition. The model as specified takes the following form.
-
+ 
+### Here is a graphical representation of the model we intend to implement:
 ![Model Initialization](Images/model.png)
 
-## *Selecting Optimizer and Loss Metric*
+### Here is the constructor as coded:
+![Model Specification](Images/code3.png)
+
+Note how at the end of the constructor, we initialize the model with our desired specification of layers. 
+out_1 = The number of maps after the first convolution (6 feature maps), and the number of maps passed forward to the second convolution.
+out_2 = The number of maps after the second convolution (12 feature maps), and the number of maps passed forward to the second pooling layer.
+
+** CNN(6,12) = CNN(Out_1, Out_2)
+
+To make a prediction, the forward pass is implmented on the input for the pointer we initialized the model with.
+
+*net = CNN(Out_1, Out_2)*
+*output = net(input)*
+
+
+## *(3) Selecting Optimizer and Loss Metric*
+Selecting the loss function and optimizer are very problem specific. Cross-entropy loss is the canonically used loss function for multi-class classification problem.
+
+For the optimizer, I selected ADAM, as it is very fast, and generally outperforms stochastic gradient descent on accuracy. I tried running the model with various weight decays, and found them to lower accuracy in this scenario.
+
 ![Loss Function and Optimizer](Images/code4.png)
 
-## *Training, Validation, and Tuning*
+## *(4) Training, Validation, and Tuning*
+I chose to train the model over 500 epochs, which took 10.9 hours to complete on my new MacBook Pro with an M1 chip.
+
+To train the model, there is functionally no difference between a cnn and a more traditional nn.
+Steps:
+1. Iterate over the DataLoader for training data
+2. Obtain samples for each batch
+3. Zero out the gradient
+4. Perform forward pass (Make predictions)
+5. Calculate loss
+6. Perform backward pass (differentiate loss w.r.t parameters)
+7. Perform optimization (update parameters)
+
+Simultaneously, we are also running the validation data through the updated parameters for each epoch.
+We run this with gradient off, as we don't need gradients for making predictions, and it is computationally expensive to validate with this unneccessary work.
+
+To tune the model, we reduce the epochs used in training, and compare accuracy on the testing data after we change specifications and hyper-paramters. Here are a few examples I tried...
+
+- 500 Epochs, no weight decay, kernel size = 5: Acc =.7973
+- 500 Epochs, weight_decay=1e-5, kernel size = 5: Acc = .7600
+- 5 Epochs, no weight decay, max pooling, kernel size = 5: Acc = .5867
+- 5 Epochs, no WD, min pooling, kernel size = 5: Acc = .5040
+- 5 Epochs, no weight decay, max pooling, kernel size = 7: Acc = .3653
+- 5 Epochs, no weight decay, max pooling, kernel size = 3: Acc = .4907
+
+### Code for training the model:
 ![Training the Model](Images/code5.png)
 
+## Training Results
 ![Training Results](Images/Fig1.png)
 
-As we see in the graph above, loss steadily decreases as we approach 100 epochs. We then observe loss flucuating relatively extremely. This tipping point is evidence of overfitting past 100 epochs, as the network begins to chase changes that are random variation in the batches. So, we would most likely choose to re-run the model with 100 epochs to get the most reliable results on the testing data.
+As we see in the graph above, loss steadily decreases as we approach 270 epochs. We then observe loss flucuating and rising. This tipping point is evidence of overfitting past ~270 epochs, as the network begins to chase changes that are random variation in the batches. So, we would most likely choose to re-run the model with 270 epochs to get the most reliable results on the testing data.
 
-## *Making Predictions on Test Data*
+## * (5) Making Predictions on Test Data*
+
+### Here is the code for making predictions on the testing data, and running the classification report:
 ![Making Predictions](Images/code6.png)
+
+### Here are the results of the classification report:
 ![Classification Report](Images/Results1.png)
+
+
