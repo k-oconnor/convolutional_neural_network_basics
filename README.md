@@ -84,13 +84,32 @@ We will do this by training the model on the 9285 training images, using the mod
 - Making Predictions on Test Data
 
 ## *Preprocessing and Loading*
+PyTorch offers a number of built-in transformation types that we can use sequentially, or in composition. 
+As we see in the image below, I first specify a *semi* arbitrary mean and standard deviation normalization pointer, which we can use in the composition.
+
+We use different compositions for the training data than for both testing and validation data.
+
+**Composition(Training):**
+- RandomResizedCrop: Crop a random portion of image and resize it to a given size.
+- RandomHorizontalFlip: At a certain probability, an image will be flipped on it's horizontal axis
+- ToTensor: Converts the image data into tensor form
+- normalize: Changes the range of pixel intesities by the mean and standard deviation specified for each channel
+
+**Composition(Validation and Testing):**
+- Resize and CenterCrop: By increasing the image size, and center cropping, we are effectively zooming in on the center of the image by a small degree. 
+- ToTensor: Converts the image data into tensor form
+- normalize: Changes the range of pixel intesities by the mean and standard deviation specified for each channel
 
 ![Normalization](Images/code1.png)
 
+To illustrate this process, we will implement a simple plotting function to show 25 random images from a random batch. By commenting out the "normalize" pointer in the compose, and running the plotting twice, we can illustrate what the transforms have done to the training data.
+
 ![Data Loaders and Visualizing a Batch](Images/code2.png)
 
+## Visualizing 25 un-normalized images
 ![Visualizing a Random Batch Un-normalized](Images/un_norm_im.png)
 
+## Visualizing 25 normalized images
 ![Visualizing a Random Batch Normalized](Images/norm_im.png)
 
 
